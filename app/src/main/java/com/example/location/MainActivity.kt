@@ -8,6 +8,7 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("MainActivity","OnCreate")
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -61,6 +63,7 @@ class MainActivity : AppCompatActivity() {
     /** Called when a button is clicked (the button in the layout file attaches to
      * this method with the android:onClick attribute)  */
     fun onButtonClick(v: View) {
+        Log.d("MainActivity","OnButtonClick")
         if (mBound) {
             when {
                 ContextCompat.checkSelfPermission(
@@ -97,6 +100,7 @@ class MainActivity : AppCompatActivity() {
                                 ), COARSE_FINE_REQUEST_CODE
                             )
                         }
+                        .setNegativeButton("No", null)
                         .show()
                 }
                 else -> requestPermissions(
@@ -125,9 +129,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showLocation() {
-        val location = mService.location
+        val locationTask = mService.locationTask
 
-        location?.let {
+        locationTask?.addOnSuccessListener {
             binding.latitude.text = getString(R.string.latitude, it.latitude)
             binding.longitude.text = getString(R.string.longitude, it.longitude)
         }
@@ -141,9 +145,11 @@ class MainActivity : AppCompatActivity() {
                 .setTitle("Receive more accurate position information")
                 .setMessage("Our app services can be made more accurate by turning on precise location. Do you wish to do so now?")
                 .setPositiveButton("Yes") {
-                        _,_->
+                        _, _->
                     requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), COARSE_FINE_REQUEST_CODE)
-                }.show()
+                }
+                .setNegativeButton("No",null)
+                .show()
         }
         mySnackbar.show()
     }

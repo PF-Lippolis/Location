@@ -3,18 +3,39 @@ package com.example.location
 import android.Manifest
 import android.app.Service
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
+import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.Task
 
 class MyLocationService : Service() {
     // Binder given to clients
     private val binder = LocalBinder()
 
+    lateinit var fusedLocationClient: FusedLocationProviderClient
+
     /** method for clients  */
-    val location: Location?
+    val locationTask: Task<Location>?
         get() {
-            return null
+            Log.d("MyLocationService", "Entering getLocation")
+            return if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                //Can't handle permission requests from Service, so we just return null
+                null
+            } else {
+                fusedLocationClient.lastLocation
+            }
         }
 
     /**
@@ -27,6 +48,7 @@ class MyLocationService : Service() {
     }
 
     override fun onBind(intent: Intent): IBinder {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         return binder
     }
 }
