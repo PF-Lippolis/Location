@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Location</string>
+    <string name="get_location">Get location</string>
+    <string name="coordinates_title">Coordinates:</string>
+    <string name="latitude">Latitude: %f</string>
+    <string name="longitude">Longitude: %f</string>
+    <string name="fine_is_better">You can get a better localization</string>
+    <string name="fine_info">More info</string>
 </resources>
