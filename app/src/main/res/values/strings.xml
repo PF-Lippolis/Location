@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Location</string>
     <string name="get_location">Get location</string>
+    <string name="coordinates_title">Coordinates:</string>
+    <string name="latitude">Latitude: %f</string>
+    <string name="longitude">Longitude: %f</string>
 </resources>
