@@ -13,6 +13,7 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import com.example.location.databinding.ActivityMainBinding
 import com.google.android.material.snackbar.Snackbar
 
@@ -29,6 +30,19 @@ class MainActivity : AppCompatActivity() {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             val binder = service as MyLocationService.LocalBinder
             mService = binder.getService()
+            Log.d("Debug: MainActivity", "Has ObserverAlready: ${mService.locationProvider.hasObservers()}")
+            /* Dato che il service è usato solo dalla main activity, è lecito registrare ogni volta
+             * un observer, dato che mService.locationProvider.hasObserver() risulta sempre false
+             * assicurarsi di non creare problemi con observer multipli in caso il service sia
+             * utilizzato da più activity.
+             * Verificare che dare un observer con lo stesso riferimento (quindi non anonimo)
+             * registri lo stesso Observer e non Observer multipli. */
+
+            mService.locationProvider.observe(this@MainActivity) {
+                    binding.latitude.text = getString(R.string.latitude, it.latitude)
+                    binding.longitude.text = getString(R.string.longitude, it.longitude)
+            }
+
             mBound = true
         }
 
@@ -55,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
+        Log.d("Debug: MainActivity", "onStop called")
         unbindService(connection)
         mBound = false
     }
@@ -86,7 +101,7 @@ class MainActivity : AppCompatActivity() {
                             )
                         }
                     }
-                    showLocation()
+                    updateLocation()
                 }
                 shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
                     AlertDialog.Builder(this)
@@ -122,19 +137,14 @@ class MainActivity : AppCompatActivity() {
         when(requestCode) {
             COARSE_FINE_REQUEST_CODE -> {
                 if(grantResults.isNotEmpty() && grantResults.first() == PackageManager.PERMISSION_GRANTED) {
-                    showLocation()
+                    updateLocation()
                 }
             }
         }
     }
 
-    private fun showLocation() {
-        val locationTask = mService.locationTask
-
-        locationTask?.addOnSuccessListener {
-            binding.latitude.text = getString(R.string.latitude, it.latitude)
-            binding.longitude.text = getString(R.string.longitude, it.longitude)
-        }
+    private fun updateLocation() {
+        mService.updateLocation()
     }
 
     private fun showFineRequestSnackbar() {

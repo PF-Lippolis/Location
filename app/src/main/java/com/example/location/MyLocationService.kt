@@ -9,6 +9,8 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Task
@@ -18,12 +20,16 @@ class MyLocationService : Service() {
     private val binder = LocalBinder()
 
     lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val _locationLiveData = MutableLiveData<Location>()
+    val locationProvider: LiveData<Location>
+        get() {
+            return _locationLiveData
+        }
 
     /** method for clients  */
-    val locationTask: Task<Location>?
-        get() {
-            Log.d("MyLocationService", "Entering getLocation")
-            return if (ActivityCompat.checkSelfPermission(
+    fun updateLocation() {
+            Log.d("MyLocationService", "Entering updateLocation")
+            if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
@@ -31,10 +37,10 @@ class MyLocationService : Service() {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                //Can't handle permission requests from Service, so we just return null
-                null
             } else {
-                fusedLocationClient.lastLocation
+                fusedLocationClient.lastLocation.addOnSuccessListener {
+                    _locationLiveData.postValue(it)
+                }
             }
         }
 
