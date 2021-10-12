@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -39,8 +40,13 @@ class MainActivity : AppCompatActivity() {
              * registri lo stesso Observer e non Observer multipli. */
 
             mService.locationProvider.observe(this@MainActivity) {
+                if(it != null) {
                     binding.latitude.text = getString(R.string.latitude, it.latitude)
                     binding.longitude.text = getString(R.string.longitude, it.longitude)
+                } else {
+                    Toast.makeText(this@MainActivity, "Please turn on GPS Localization", Toast.LENGTH_LONG)
+                        .show()
+                }
             }
 
             mBound = true
